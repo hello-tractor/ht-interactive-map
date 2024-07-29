@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Map with Folium</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-layers-tree/dist/L.Control.Layers.Tree.css" />
+    <script src="https://unpkg.com/leaflet-control-layers-tree/dist/L.Control.Layers.Tree.js"></script>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif; /* Use Times New Roman font */
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: calc(100vh - 30px); /* Adjust map height */
+            margin-top: 20px;
+        }
+        .search-container {
+    display: none; /* Initially hidden */
+    position: absolute;
+    bottom: 0;
+    left: 10px;
+    z-index: 1000;
+    background-color: white;
+    padding: 5px; /* Reduced padding */
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    width: 50px; /* Set a smaller width */
+    height: 20px; /* Set a smaller height */
+}
+
+.search-container input[type="text"] {
+    padding: 2px; /* Reduced padding */
+    width: 40px; /* Smaller width */
+    margin-right: 2px; /* Reduced margin */
+    font-size: 10px; /* Smaller font size */
+}
+
+.search-container button {
+    padding: 2px 5px; /* Reduced padding */
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    font-size: 10px; /* Smaller font size */
+}
+
+.search-container button:hover {
+    background-color: #0056b3;
+}
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 14px; 
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        .dropdown-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        select {
+            width: 100%;
+            padding: 5px;
+        }
+        .toggle-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-width: 450px;
+            max-height: 400px;
+            margin-bottom: 15px; /* Adjust maximum width */
+            overflow-y: auto;
+        }
+        .toggle-label {
+    display: inline-block;
+    width: 80px; /* Adjust width of the toggle labels */
+    margin-right: 20px;
+    text-align: left; /* Align text to right of the label */
+}
+
+        .switch {
+            display: inline-block;
+            position: relative;
+            width: 40px; 
+            height: 20px; 
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px; /* Adjust border radius to make round */
+        }
+        .slider.round {
+            border-radius: 20px; /* Adjust border radius to make round */
+        }
+        .slider.round:before {
+            position: absolute;
+            content: "";
+            height: 12px; /* Adjust height of the knob */
+            width: 12px; /* Adjust width of the knob */
+            left: 2px; /* Adjust left position of the knob */
+            bottom: 2px; /* Adjust bottom position of the knob */
+            background-color: white;
+            border-radius: 50%; /* Make the knob round */
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: #ff6200;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px); /* Adjust the distance the knob moves */
+        }
+        .leaflet-bottom.leaflet-right {
+            bottom: 10px;
+            right: 10px;
+        }
+        #header {
+            text-align: center;
+            font-size: 24px;
+            margin-top: 5px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        #header img {
+            margin-right: 8px; /* Adjust spacing between image and text */
+            height: 40px; /* Adjust the height of the image */
+            width: auto; /* Maintain aspect ratio */
+        }
+        .legend-container {
+            background-color: white;
+            border: 2px solid black;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+        }
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .legend-color {
+            width: 10px;
+            height: 18px;
+            margin-right: 5px;
+            border: 1px solid #000;
+        }
+        .leaflet-popup-content-wrapper {
+    font-size: 10px; /* Increase the font size */
+    padding: 10px; /* Increase the padding inside the popup */
+    margin:12; /* Adjust the margin as needed */
+    border-radius: 10px; /* Optional: Increase the border-radius for rounded corners */
+}
+.leaflet-popup-content-wrapper {
+    z-index: 10000; 
+}
+.top-right-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+#aboutButton,
+#definitionsButton {
+    background-color: #ff6200; /* Bootstrap primary blue */
+    color: white;
+    border: none;
+    padding: 15px 30px; /* Increased padding for larger buttons */
+    margin-top: 8px; /* Moves the buttons down */
+    margin-right: 5px; 
+    cursor: pointer;
+    border-radius: 5px; 
+}
+
+#aboutButton:hover,
+#definitionsButton:hover {
+    background-color: #ff6200; /* Slightly darker shade on hover */
+}
+
+    </style>
+</head>
+<body>
+    <div id="header">
+        <img src="/static/Screenshot%202024-06-19%20180915.png" alt="Logo">
+        HELLO TRACTOR INTERACTIVE MAP
+    </div>
+    <div id="map"></div>
+
+     <!-- Search container -->
+     <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Enter Ward Name">
+        <button id="searchButton">Search</button>
+    </div>
+    <div class="top-right-buttons">
+        <button id="aboutButton">ABOUT</button>
+        <button id="definitionsButton">DEFINITIONS</button>
+    </div>
+    
+   
+    <!-- Controls for year, month, and county selection -->
+<div id="controls">
+    <!-- Dropdown for county selection -->
+    <div class="control-group">
+        <div class="dropdown-title">Select County</div>
+        <select id="countyDropdown">
+            <option value="select county">Select County</option>
+            <option value="baringo">Baringo</option>
+            <option value="bomet">Bomet</option>
+            <option value="bungoma">Bungoma</option>
+            <option value="busia">Busia</option>
+            <option value="elgeyo-marakwet">Elgeyo-Marakwet</option>
+            <option value="embu">Embu</option>
+            <option value="garissa">Garissa</option>
+            <option value="homabay">Homa Bay</option>
+            <option value="isiolo">Isiolo</option>
+            <option value="kajiado">Kajiado</option>
+            <option value="kakamega">Kakamega</option>
+            <option value="kericho">Kericho</option>
+            <option value="kiambu">Kiambu</option>
+            <option value="kilifi">Kilifi</option>
+            <option value="kirinyaga">Kirinyaga</option>
+            <option value="kisii">Kisii</option>
+            <option value="kisumu">Kisumu</option>
+            <option value="kitui">Kitui</option>
+            <option value="kwale">Kwale</option>
+            <option value="laikipia">Laikipia</option>
+            <option value="lamu">Lamu</option>
+            <option value="machakos">Machakos</option>
+            <option value="makueni">Makueni</option>
+            <option value="mandera">Mandera</option>
+            <option value="marsabit">Marsabit</option>
+            <option value="meru">Meru</option>
+            <option value="migori">Migori</option>
+            <option value="mombasa">Mombasa</option>
+            <option value="muranga">Murang'a</option>
+            <option value="nairobi">Nairobi</option>
+            <option value="nakuru">Nakuru</option>
+            <option value="nandi">Nandi</option>
+            <option value="narok">Narok</option>
+            <option value="nyamira">Nyamira</option>
+            <option value="nyandarua">Nyandarua</option>
+            <option value="nyeri">Nyeri</option>
+            <option value="samburu">Samburu</option>
+            <option value="siaya">Siaya</option>
+            <option value="taita-taveta">Taita-Taveta</option>
+            <option value="tana-river">Tana River</option>
+            <option value="tharaka-nithi">Tharaka-Nithi</option>
+            <option value="trans-nzoia">Trans-Nzoia</option>
+            <option value="turkana">Turkana</option>
+            <option value="uasin-gishu">Uasin Gishu</option>
+            <option value="vihiga">Vihiga</option>
+            <option value="wajir">Wajir</option>
+            <option value="west-pokot">West Pokot</option>
+        </select>
+    </div>
+    <!-- Controls for year and month selection -->
+    <div class="control-group">
+        <div class="dropdown-title">Year</div>
+        <select id="yearDropdown">
+            <option value="select year">Select Year</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <!-- Add more years if needed -->
+        </select>
+    </div>
+    <div class="control-group">
+        <div class="dropdown-title">Month</div>
+        <select id="monthDropdown">
+            <option value="select month">Select Month</option>
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+        </select>
+    </div>
+
+
+        <!-- Toggle visibility controls -->
+        <div class="toggle-container">
+            <div class="control-group">
+                <label class="toggle-label">County:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="County" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Subcounty:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Subcounty" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Ward:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Ward" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Month:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Month" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Year:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Year" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Temp(mean):</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Temp(mean)" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI-5:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI-5" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI-50:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI-50" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI-95:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI-95" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI-25:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI-25" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI (max):</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI (max)" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI (min):</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI (min)" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">NDVI (mean):</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="NDVI (mean)" checked>
+                                        <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Rainfall:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Rainfall" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Landcover:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Landcover" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Worldcover (ESA):</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Worldcover (ESA)" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Agric-Occupation:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Agric-Occupation" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Population:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Population" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="toggle-label">Avg-Agri-Pop:</label>
+                <label class="switch">
+                    <input type="checkbox" data-toggle="Avg-Agri-Pop" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/leaflet-control-layers-tree/dist/L.Control.Layers.Tree.js"></script>
+    <script>
+       
+       var map = L.map('map').setView([0.9036, 36.1477], 8); // Set initial view and zoom
+        
+        // Define basemaps
+        var osm = L.tileLayer(
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }
+        ).addTo(map);
+    
+        var cyclOSM = L.tileLayer(
+            'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
+            {
+                maxZoom: 19,
+                attribution: '<a href="https://github.com/cyclosm/cyclosm-cartocss-style/releases" title="CyclOSM - Open Bicycle render">CyclOSM</a> | Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }
+        );
+
+
+        // Create FeatureGroups for GeoJSON data
+        var geojsonLayer2021 = L.featureGroup();
+        var geojsonLayer2022 = L.featureGroup();
+        var geojsonLayer2023 = L.featureGroup();
+        
+        // Initialize counties layer
+        var countiesLayer = L.geoJson(null, {
+            style: function (feature) {
+                return {
+                    color: "Black",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.1
+                };
+            },
+            onEachFeature: function (feature, layer) {
+                layer.on('mouseover', function (e) {
+                    var popup = L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent('County: ' + feature.properties.name)
+                        .openOn(map);
+                });
+                layer.on('mouseout', function () {
+                    map.closePopup();
+                });
+            }
+        });
+        // Initialize farm serviced layers
+        var farmServiced2023Layer = L.geoJson(null, {
+            style: function (feature) {
+                return {
+                    color: "green",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.3
+                };
+            },
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup('Farm Serviced 2023: ' + feature.properties.name);
+            }
+        });
+
+        var farmServiced2024Layer = L.geoJson(null, {
+    style: function (feature) {
+        return {
+            color: "blue",
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.3
+        };
+    },
+    onEachFeature: function (feature, layer) {
+        
+        layer.bindPopup('Farm Serviced 2024');
+    }
+});
+
+    
+        // Initialize wards layer
+        var wardsLayer = L.geoJson(null, {
+            style: function (feature) {
+                return {
+                    color: "#ff6200",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0
+                };
+            },
+            onEachFeature: function (feature, layer) {
+                // Disable pop-up for ward polygons
+                layer.unbindPopup();
+            }
+        });
+
+        // Fetch the counties GeoJSON data
+        $.getJSON("https://raw.githubusercontent.com/leoouma/keAdminBounds/main/kenyan-counties.geojson", function(data) {
+            countiesLayer.addData(data);
+        });
+
+        // Fetch the wards GeoJSON data
+        $.getJSON("https://raw.githubusercontent.com/leoouma/keAdminBounds/main/Kenya_adm2_uscb_2020.geojson", function(data) {
+            wardsLayer.addData(data);
+        });
+    
+        // Create layer groups
+        var baseMaps = {
+            "OpenStreetMap": osm,
+            "CyclOSM": cyclOSM
+        };
+
+        var overlayMaps = {
+            "Wards": wardsLayer, 
+            "Farm Serviced 2023": farmServiced2023Layer,
+            "Farm Serviced 2024": farmServiced2024Layer
+        };
+
+        // Add layer control to the map with collapsed option
+        L.control.layers(baseMaps, overlayMaps, {collapsed: true}).addTo(map);
+       
+        // Add zoom control to the map
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        var circleMarkers = [];
+
+    
+        // Function to update GeoJSON layer
+        function updateGeoJSON(selectedYear, selectedMonth) {
+            var geojsonLayer = L.layerGroup();
+    
+            // Clear previous GeoJSON layers
+            geojsonLayer2021.clearLayers();
+            geojsonLayer2022.clearLayers();
+            geojsonLayer2023.clearLayers();
+    
+            // Determine which GeoJSON layer to update based on selected year
+            if (selectedYear === '2021') {
+                geojsonLayer = geojsonLayer2021;
+            } else if (selectedYear === '2022') {
+                geojsonLayer = geojsonLayer2022;
+            } else if (selectedYear === '2023') {
+                geojsonLayer = geojsonLayer2023;
+            }
+            
+           var originalMarkers = [];
+
+    function updateGeoJSON(selectedYear, selectedMonth) {
+    var geojsonLayer = L.layerGroup();
+
+    // Fetch GeoJSON data and add markers
+    $.ajax({
+        type: 'POST',
+        contentType: 'application/json',
+        url: '/update_map',
+        data: JSON.stringify({ year: selectedYear, month: selectedMonth }),
+
+        
+        success: function(data) {
+            // Clear previous markers
+            originalMarkers.forEach(item => {
+                map.removeLayer(item.marker);
+            });
+           
+            
+            // Modify the part where you create and add markers
+data.forEach(function(feature) {
+    var popupContent = feature.popup_content;
+    var marker = L.circleMarker([feature.latitude, feature.longitude], {
+        radius: 1.5,
+        color: '#013220',
+        fillColor: '#013220',
+        fillOpacity: 1
+    });
+
+    // Create a custom popup element
+    var customPopup = L.DomUtil.create('div', 'custom-popup leaflet-popup-content-wrapper');
+    customPopup.innerHTML = popupContent; 
+
+      
+    // Inside the loop where you create markers and bind custom popups
+    marker.bindPopup(customPopup).on('popupopen', function(e) {
+    var popupContent = $(e.popup._contentNode);
+    updatePopupVisibility(popupContent);
+});
+
+
+    // Listen for the mouseover event to show the popup
+    marker.on('mouseover', function(event) {
+        this.openPopup(); // Programmatically open the popup
+    });
+
+    // Listen for the mouseout event to hide the popup
+    marker.on('mouseout', function(event) {
+        this.closePopup(); 
+    });
+    marker.setStyle({ zIndexOffset: 10000 }); 
+
+    geojsonLayer.addLayer(marker);
+
+    // Store the original marker and its popup content
+    originalMarkers.push({ marker: marker, popupContent: popupContent });
+});
+
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching GeoJSON:', error);
+        }
+    });
+
+    // Add the selected GeoJSON layer to the map
+    geojsonLayer.addTo(map);
+}
+
+// Initial call to load GeoJSON data for 2021 and January
+updateGeoJSON('2021', '1');
+
+// Dropdown change event handlers
+document.getElementById('yearDropdown').addEventListener('change', function() {
+    var selectedYear = this.value;
+    var selectedMonth = document.getElementById('monthDropdown').value;
+    updateGeoJSON(selectedYear, selectedMonth);
+});
+
+document.getElementById('monthDropdown').addEventListener('change', function() {
+    var selectedYear = document.getElementById('yearDropdown').value;
+    var selectedMonth = this.value;
+    updateGeoJSON(selectedYear, selectedMonth);
+});
+
+
+document.getElementById('searchButton').addEventListener('click', function() {
+    var searchText = document.getElementById('searchInput').value.trim().toLowerCase();
+
+    // Send the search term to the server
+    fetch(`/search_counties?query=${encodeURIComponent(searchText)}`)
+    .then(response => response.json())
+    .then(data => {
+        highlightMatchingMarkers(data);
+    })
+    .catch(error => console.error('Error fetching search results:', error));
+});
+
+    // Fetch GeoJSON data and add markers
+    // Fetch GeoJSON data and add markers
+$.ajax({
+    type: 'POST',
+    contentType: 'application/json',
+    url: '/update_map',
+    data: JSON.stringify({ year: selectedYear, month: selectedMonth }),
+    success: function(data) {
+        data.forEach(function(feature) {
+            var popupContent = feature.popup_content;
+            var marker = L.circleMarker([feature.latitude, feature.longitude], {
+                radius: 1.5,
+                color: '#013220',
+                fillColor: '#013220',
+                fillOpacity: 1
+            });
+            marker.bindPopup(popupContent); // Bind popup content to the marker
+            geojsonLayer.addLayer(marker); // Add marker to the geojsonLayer
+            
+            // Store the original marker and its popup content
+            originalMarkers.push({ marker: marker, popupContent: popupContent });
+        });
+    },
+    error: function(xhr, status, error) {
+        console.error('Error fetching GeoJSON:', error);
+    }
+});
+
+// Add the selected GeoJSON layer to the map
+geojsonLayer.addTo(map);
+
+}
+
+// Initial call to load GeoJSON data for 2021 and January
+updateGeoJSON('2021', '1');
+
+// Dropdown change event handlers
+document.getElementById('yearDropdown').addEventListener('change', function() {
+    var selectedYear = this.value;
+    var selectedMonth = document.getElementById('monthDropdown').value;
+    updateGeoJSON(selectedYear, selectedMonth);
+});
+
+document.getElementById('monthDropdown').addEventListener('change', function() {
+    var selectedYear = document.getElementById('yearDropdown').value;
+    var selectedMonth = this.value;
+    updateGeoJSON(selectedYear, selectedMonth);
+});
+
+
+
+// Store the initial state of attribute visibility
+var attributeVisibility = {};
+
+// Initialize attributeVisibility based on the initial state of checkboxes
+$('.toggle-container input[type="checkbox"]').each(function() {
+    var attributeName = $(this).attr('data-toggle');
+    attributeVisibility[attributeName] = $(this).is(':checked');
+});
+
+// Function to update the visibility of attributes in pop-up content
+function updatePopupVisibility(popupContent) {
+    for (var attributeName in attributeVisibility) {
+        if (attributeVisibility.hasOwnProperty(attributeName)) {
+            if (attributeVisibility[attributeName]) {
+                // Ensure the selector matches your custom popup structure
+                popupContent.find(`[data-name="${attributeName}"]`).show();
+            } else {
+                popupContent.find(`[data-name="${attributeName}"]`).hide();
+            }
+        }
+    }
+}
+
+
+// Toggle change event handler
+$('.toggle-container input[type="checkbox"]').change(function() {
+    var attributeName = $(this).attr('data-toggle');
+    var isChecked = $(this).is(':checked');
+
+    // Update attributeVisibility state
+    attributeVisibility[attributeName] = isChecked;
+
+    // Loop through each open pop-up content and update visibility
+    $('.leaflet-popup').each(function() {
+        var popupContent = $(this).find('.leaflet-popup-content');
+        updatePopupVisibility(popupContent);
+    });
+});
+
+// Assuming you have a function to add markers and bind popups
+function addMarkersAndPopups(data) {
+    data.forEach(function(item) {
+        var marker = L.marker([item.latitude, item.longitude]).addTo(map);
+
+        marker.bindPopup(item.popup_content).on('popupopen', function(e) {
+            var popupContent = $(e.popup._contentNode);
+            updatePopupVisibility(popupContent);
+        });
+    });
+}
+
+// Function to fetch data and add markers
+function fetchDataAndAddMarkers(year, month) {
+    $.post('/update_map', { year: year, month: month }, function(data) {
+        addMarkersAndPopups(data);
+    });
+}
+
+// Fetch initial data and add markers
+$(document).ready(function() {
+    var initialYear = '2021'; // Set the initial year you want to load
+    var initialMonth = '1'; // Set the initial month you want to load
+
+    fetchDataAndAddMarkers(initialYear, initialMonth);
+});
+
+
+// Event listener for county dropdown change
+// Event listener for county dropdown change
+document.getElementById('countyDropdown').addEventListener('change', function() {
+    var selectedCounty = this.value; // Get selected county from dropdown
+
+    // Clear existing GeoJSON layers except for the wards layer
+    map.eachLayer(function(layer) {
+        if (layer instanceof L.GeoJSON && layer.options.style && layer !== wardsLayer) {
+            layer.clearLayers();
+        }
+    });
+
+    // Construct the URL for the GeoJSON data of the selected county
+    var geojsonUrl = 'https://raw.githubusercontent.com/Sumbati10/KENYA_COUNTIES/main/' + selectedCounty + '.geojson';
+
+    // Fetch the GeoJSON data and add it to the map
+    fetch(geojsonUrl)
+        .then(response => response.json())
+        .then(data => {
+            var geoJsonLayer = L.geoJSON(data, {
+                style: function(feature) {
+                    return {
+                        fillColor: '#ff6200', // fill color
+                        weight: 2, // border weight
+                        opacity: 1, // border opacity
+                        color: 'white', // border color
+                        fillOpacity: 0.5 // fill opacity
+                    };
+                }
+            }).addTo(map);
+
+            // Calculate the bounds of the GeoJSON layer
+            var bounds = geoJsonLayer.getBounds();
+
+            // Zoom out to fit the bounds
+            map.fitBounds(bounds, { padding: [90, 90] }); // Adjust padding as needed
+        })
+        .catch(error => console.error('Error fetching GeoJSON:', error));
+});
+
+document.getElementById('aboutButton').addEventListener('click', function() {
+            window.open('/about', '_blank');
+        });
+
+        document.getElementById('definitionsButton').addEventListener('click', function() {
+            window.open('/definition', '_blank');
+        });
+
+    $.ajax({
+    url: '/fetch_landjob_data',
+    type: 'POST',
+    contentType: 'application/json',
+    data: {},
+    success: function(data) {
+        // Assuming data is an array of features with 'geometry' and other properties
+        farmServiced2024Layer.clearLayers(); 
+        farmServiced2024Layer.addData(data); 
+    },
+    error: function(xhr, status, error) {
+        console.error("An error occurred while fetching landjob data:", error);
+    }
+});
+
+
+   </script>
+    
+   </body>
+</html>
+           

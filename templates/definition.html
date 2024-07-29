@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Definitions - Interactive Agricultural Map</title>
+    <style>
+       body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9f9f9;
+    font-size: 14px; /* Or equivalently, font-size: 0.875rem; */
+}
+
+
+        header {
+            background-color: #ff6600;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        main {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        section {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #ff6600;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+
+        .highlight {
+            background-color: #ffcc99;
+            padding: 10px;
+            border-left: 5px solid #ff6600;
+        }
+
+        
+
+        footer {
+            background-color: #ff6600;
+            color: white;
+            text-align: center;
+            padding: 0px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>HELLO TRACTOR INTERACTIVE MAP</h1>
+    </header>
+    
+    <main>
+        <section>
+            <h2>NDVI</h2>
+            <div class="highlight">
+                <p>The Normalized Difference Vegetation Index (NDVI) is a remote sensing technique used to assess the health and density of vegetation. It is calculated using the difference between near-infrared (NIR) and red light reflectance by objects on the Earth's surface. Healthy vegetation reflects more NIR and absorbs more red light, leading to higher NDVI values. NDVI values range from -1 to +1, where positive values indicate live green vegetation, negative values suggest water bodies or non-photosynthetic vegetation, and near-zero values might indicate barren areas or urban surfaces.</p>
+            </div>
+            <p>The data is collected on 16 Days and  250 Metres. While NDVI typically ranges from -1 to +1, interpreting values specifically from 1 to 10 requires understanding the scale within the typical range:</p>
+            <ul>
+                <li><strong>Near 0:</strong> Bare soil, urban areas, or non-vegetated surfaces. These areas have minimal reflection in the NIR band and absorb most of the red light, resulting in low NDVI values close to zero.</li>
+                <li><strong>Between 0 and 0.2:</strong> Sparse vegetation or areas with low vegetation density. These values indicate the presence of vegetation but not in significant quantities.</li>
+                <li><strong>Between 0.2 and 0.4:</strong> Moderate vegetation density. Areas with sparse vegetation fall into this category, indicating the start of noticeable greenery.</li>
+                <li><strong>Between 0.4 and 0.5:</strong> Higher vegetation density. This range suggests a moderate level of green leaf density, indicating healthier vegetation.</li>
+                <li><strong>Above 0.5:</strong> Dense vegetation. Values approaching +1 indicate dense, healthy vegetation, often associated with lush forests or highly productive agricultural fields.</li>
+                <li><strong>NDVI-5:</strong> The 5th percentile of NDVI values. Represents areas with very low vegetation cover or unhealthy vegetation.</li>
+    <li><strong>NDVI-50:</strong> The median NDVI value. Gives an idea of the average vegetation health across the area of interest.</li>
+    <li><strong>NDVI-95:</strong> The 95th percentile of NDVI values. Represents areas with very high vegetation cover or exceptionally healthy vegetation.</li>
+    <li><strong>NDVI-25:</strong> The 25th percentile of NDVI values. Indicates areas with relatively lower vegetation cover or less healthy vegetation compared to the majority of the area.</li>
+    <li><strong>NDVI (max):</strong> The maximum observed NDVI value within the dataset. Represents the area with the highest vegetation cover or healthiest vegetation.</li>
+    <li><strong>NDVI (min):</strong> The minimum observed NDVI value within the dataset. Represents the area with the lowest vegetation cover or unhealthiest vegetation, possibly indicating bare soil, water bodies, clouds, or snow.</li> 
+            </ul>
+            <p>Click to learn more: <a href="https://terra.nasa.gov/">Terra</a> and <a href="https://aqua.nasa.gov/">Aqua</a></p>
+        </section>
+
+        <section>
+            <h2>Landcover</h2>
+            <div class="highlight">
+                <p>The Land Cover Classification System (LCCS) developed by the Food and Agriculture Organization (FAO) is a comprehensive framework for categorizing the Earth's surface based on observable characteristics. It is designed to be flexible, scalable, and capable of describing the full spectrum of land cover types across various geographical scales. The LCCS employs a dichotomous phase followed by a modular-hierarchical phase to create detailed and precise land cover classes. Each class is uniquely identified by a Boolean formula, a unique number for GIS integration, and a descriptive name.</p>
+            </div>
+            <p>Interpretation from 1 to 10 involves understanding the hierarchical structure of the LCCS, which categorizes land cover into broad categories and then refines these categories through a series of classifiers:</p>
+            <ul>
+                <li><strong>1-2:</strong> Primarily Vegetated Areas vs. Primarily Non-Vegetated Areas. These are the foundational distinctions, separating areas based on the presence or absence of vegetation.</li>
+                <li><strong>3-4:</strong> Terrestrial Primarily Vegetated Areas vs. Terrestrial Primarily Non-Vegetated Areas. This distinction focuses on terrestrial environments, considering whether vegetation or non-vegetation dominates.</li>
+                <li><strong>5-6:</strong> Aquatic or Regularly Flooded Primarily Vegetated Areas vs. Aquatic or Regularly Flooded Primarily Non-Vegetated Areas. These classes highlight areas influenced by water, distinguishing between those with and without vegetation.</li>
+                <li><strong>7-8:</strong> Managed Lands vs. Cultivated Areas. These classes differentiate human-altered landscapes, with managed lands being maintained for purposes other than crop production.</li>
+                <li><strong>9-10:</strong> Urban Areas vs. Bare Areas. These are among the most altered by human activity, with urban areas characterized by built structures and bare areas devoid of vegetation or significant human alteration.</li>
+            </ul>
+            
+        </section>
+
+        <section>
+            <h2>Temperature</h2>
+            <div class="highlight">
+                <p>Temperature is measured in degrees Celsius (°C) and is a fundamental parameter in weather and climate monitoring.</p>
+            </div>
+            <div class="temperature-definition">
+                <ul>
+                    <li>The temperature is collected from Terra and Aqua NASA site (1 Day, 1 KM).</li>
+                    <li>The Terra and Aqua satellites, part of NASA's Earth Observing System (EOS), carry instruments like the Moderate Resolution Imaging Spectroradiometer (MODIS) that measure surface temperatures.</li>
+                    <li>MODIS captures data in multiple spectral bands, allowing it to determine land and sea surface temperatures by analyzing thermal infrared radiation emitted by the Earth's surface.</li>
+                    <li>This data is then processed to provide temperature maps that are used for various applications, including climate research, weather forecasting, and environmental monitoring.</li>
+                </ul>
+                <p>Click to learn more: <a href="https://terra.nasa.gov/">Terra</a> and <a href="https://aqua.nasa.gov/">Aqua</a></p>
+            </div>
+        </section>
+
+        <section>
+            <h2>Rainfall/Precipitation</h2>
+            <div class="highlight">
+                <p>Rainfall/Precipitation, commonly measured in millimeters (mm) or inches, represents the total amount of rain, snow, sleet, or hail that falls over a specific area. To determine average precipitation, measurements are typically collected from various weather stations within a region over a period of time. These data points are then averaged to provide a comprehensive understanding of precipitation trends and patterns.</p>
+            </div>
+            
+                <ul>
+                    <li>The Climate Hazards Group InfraRed Precipitation with Station data (CHIRPS) is a dataset that combines satellite observations with ground-based station data to produce high-resolution precipitation estimates.</li>
+                    <li>CHIRPS uses infrared Cold Cloud Duration (CCD) observations from satellites to estimate rainfall, which are then calibrated and validated with actual rainfall data from weather stations.</li>
+                    <li>By integrating these data sources, CHIRPS provides reliable precipitation measurements and helps in monitoring and analyzing climatic conditions, particularly in regions where ground-based data is sparse or unavailable. This dataset is valuable for various applications, including drought monitoring, agricultural planning, and water resource management.</li>
+                    <li>More on this here <a href="https://www.nature.com/articles/sdata201566">https://www.nature.com/articles/sdata201566</a></li>
+                </ul>
+            </div>
+        </section>
+        <section>
+            <h2>WorldCover</h2>
+            <div class="highlight">
+                <p>WorldCover is a global land cover mapping product developed by the European Space Agency (ESA). It provides high-resolution, accurate maps of land cover types across the entire globe. The primary goal of WorldCover is to support various applications, including climate change monitoring, environmental management, and sustainable development.</p>
+            </div>
+            <div class="Worldcover-definition">
+                    <p>The data is fetched using remote sensing from the Sentinel-1 and Sentinel-2 satellites, part of the Copernicus program, which capture high-resolution optical and radar images of the Earth's surface.</p>
+                    <p>These images are processed and classified using advanced machine learning algorithms to produce accurate land cover maps.</p>
+                    <p>The data is static and is represented as follows:</p>
+                <ul>   
+                    <li><strong>10:</strong> Deciduous Forests</li>
+                    <li><strong>20:</strong> Mixed Forests</li>
+                    <li><strong>30:</strong> Coniferous Forests</li>
+                    <li><strong>60:</strong> Wetlands</li>
+                    <li><strong>70:</strong> Urban Areas</li>
+                    <li><strong>80:</strong> Cultivated Lands</li>
+                    <li><strong>90:</strong> Grasslands/Savannas</li>
+                    <li><strong>100:</strong> Unique Ecosystems/Protected Areas</li>
+                </ul>
+                <p>For more detailed information and access to WorldCover data, you can visit the <a href="https://worldcover2020.esa.int/">ESA WorldCover website</a>.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>Agric-Occupation</h2>
+            <div class="highlight">
+                <ul>
+                    <li><strong>Description:</strong> This variable represents the percentage of the population whose primary occupation is agriculture. It quantifies the proportion of individuals engaged in farming or related agricultural activities as their main source of income or employment. This metric is crucial for understanding the economic reliance on agriculture within a community.</li>
+                    <li><strong>Population:</strong> This refers to the total population in a given county and ward in Kenya. It encompasses all individuals residing within the specified geographical boundaries, regardless of their occupation or demographic characteristics. The population count is a fundamental statistic that informs various analyses, including demographic studies, planning for public services, and policy development.</li>
+                    <li><strong>Avg-Agri-Pop:</strong> This variable stands for the average agricultural population, which is essentially the proportion of people practicing agriculture out of the total population. It is calculated by dividing the number of people involved in agriculture by the total population and multiplying by 100 to get a percentage. This metric provides insight into the prevalence of agricultural activities among the population, indicating how many people are directly involved in farming or related sectors.</li>
+                </ul>
+            </div>
+            <div>
+                <p>The data was collected from The Demographic and Health Surveys (DHS) Program by analyzing the percent distribution of women and men by employment status. The population base for this analysis includes women and men aged 15-49, utilizing institutional and marital records (IR file, MR file) with identifiers set as `v731 = 1` for women and `mv731 = 1` for men. The time period covered spans the 12 months preceding the survey. For more information, please visit <a href="https://www.dhsprogram.com/">https://www.dhsprogram.com/</a>.</p>
+            </div>
+            <ul>
+                <li><strong>Data Source:</strong> The Demographic and Health Surveys (DHS) Program</li>
+                <li><strong>Population Base:</strong> Women and men aged 15-49</li>
+                <li><strong>Record Files Used:</strong> Institutional and Marital Records (IR file, MR file)</li>
+                <li><strong>Identifier Codes:</strong> `v731 = 1` for women, `mv731 = 1` for men</li>
+                <li><strong>Time Period:</strong> 12 months preceding the survey</li>
+            </ul>
+        </section>
+        
+                
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Hello Tractor, Data Team</p>
+    </footer>
+</body>
+</html>
