@@ -10,7 +10,7 @@
 #     steps:
 #     - name: checkout
 #       uses: actions/checkout@v4
-    
+
 #     - name: Pull latest changes
 #       run: |
 #         git fetch origin main
@@ -18,5 +18,5 @@
 
 #     - name: Update files
 #       run: |
-#         sudo ln -sT ~/HT_INTERACTIVE_MAP /var/www/html/
+#         sudo ln -sT ~/ht-interactive-map /var/www/html/
 #         systemctl restart httpd.service
